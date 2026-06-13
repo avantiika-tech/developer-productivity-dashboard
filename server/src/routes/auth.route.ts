@@ -1,5 +1,6 @@
 import { Router } from "express";
 import axios from "axios";
+import { User } from "../models/user.model.ts";
 
 const router = Router();
 
@@ -31,24 +32,34 @@ router.get("/callback", async (req, res) => {
 
 	const accessToken = tokenRes.data.access_token;
 
-    const userRes = await axios.get("https://api.github.com/user", {
-        headers: {
-            Authorization: `token ${accessToken}`,
-        },
-    });
+	const userRes = await axios.get("https://api.github.com/user", {
+		headers: {
+			Authorization: `token ${accessToken}`,
+		},
+	});
 
-    const emailRes = await axios.get("https://api.github.com/user/emails", {
-        headers: {
-            Authorization: `token ${accessToken}`,
-        },
-    });
+	const emailRes = await axios.get("https://api.github.com/user/emails", {
+		headers: {
+			Authorization: `token ${accessToken}`,
+		},
+	});
 
-    const email = emailRes.data.find((e: any) => e.primary).email;
+	const email = emailRes.data.find((e: any) => e.primary).email;
 
-    console.log("GitHub User:", userRes.data.name);
-    console.log("GitHub Email:", email);
+	let user = await User.findOne({
+		email,
+	});
 
-    res.redirect(`${process.env.FRONTEND_URL}/success`)
+	if (!user) {
+		user = await User.create({
+			githubId: userRes.data.id,
+			name: userRes.data.name,
+			email,
+			avatar: userRes.data.avatar_url,
+		});
+	}
+
+	res.redirect(`${process.env.FRONTEND_URL}/success`);
 });
 
 export default router;
