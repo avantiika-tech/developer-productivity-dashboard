@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import SuccessPage from './components/SuccessPage.tsx'
+import Profile from './components/Profile.tsx'
 
 const router = createBrowserRouter([
 	{
@@ -13,6 +14,10 @@ const router = createBrowserRouter([
   {
     path: '/success',
     element: <><SuccessPage /></>
+  },
+  {
+    path: '/profile',
+    element: <><Profile /></>
   },
 ])
 

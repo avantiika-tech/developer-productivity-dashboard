@@ -1,6 +1,7 @@
 import { Router } from "express";
 import axios from "axios";
 import { User } from "../models/user.model.ts";
+import { generateJwtToken } from "../utils/jwt.ts";
 
 const router = Router();
 
@@ -52,14 +53,21 @@ router.get("/callback", async (req, res) => {
 
 	if (!user) {
 		user = await User.create({
-			githubId: userRes.data.id,
+			id: userRes.data.id,
 			name: userRes.data.name,
 			email,
 			avatar: userRes.data.avatar_url,
 		});
 	}
 
-	res.redirect(`${process.env.FRONTEND_URL}/success`);
+	const token = generateJwtToken(user._id.toString());
+
+	res.cookie("token", token, {
+		httpOnly: true,
+		maxAge: 30 * 24 * 60 * 60 * 1000,
+	});
+
+	res.redirect(`${process.env.FRONTEND_URL}/profile`);
 });
 
 export default router;
